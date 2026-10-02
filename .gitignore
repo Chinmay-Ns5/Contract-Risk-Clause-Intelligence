@@ -1,0 +1,5 @@
+.env.local
+node_modules/
+.next/
+vector-db/qdrant_storage/
+vector-db/node_modules/
