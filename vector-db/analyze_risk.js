@@ -7,6 +7,7 @@ import { searchSimilarPatterns } from './qdrant.js';
 const SIMILARITY_THRESHOLD = 0.35;
 
 async function main() {
+  // Connect to MySQL
   const db = await mysql.createConnection({
     host: process.env.MYSQL_HOST,
     port: Number(process.env.MYSQL_PORT),
@@ -15,63 +16,65 @@ async function main() {
     database: process.env.MYSQL_DATABASE
   });
 
-  try {
-    const [clauses] = await db.execute(
-      'SELECT clause_id, clause_text FROM clauses'
+  console.log('Connected to MySQL.');
+
+  // Get all clauses from the database
+  const [clauses] = await db.execute(
+    'SELECT clause_id, clause_text FROM clauses'
+  );
+
+  console.log(`Found ${clauses.length} clause(s) to analyze.`);
+
+  for (const clause of clauses) {
+    console.log(
+      `\nClause ${clause.clause_id}: "${clause.clause_text.substring(0, 60)}..."`
     );
 
-    for (const clause of clauses) {
-      const vector = await generateEmbedding(clause.clause_text);
+    // Generate embedding for the clause
+    const vector = await generateEmbedding(clause.clause_text);
 
-      const results = await searchSimilarPatterns(vector, 4);
+    // Search Qdrant for the most similar risk patterns
+    const results = await searchSimilarPatterns(vector, 4);
 
+    for (const match of results) {
       console.log(
-        `\nClause ${clause.clause_id}: "${clause.clause_text.substring(0, 60)}..."`
+        `  -> Pattern ${match.payload.mysql_id}, score: ${match.score.toFixed(4)}`
       );
 
-      for (const match of results) {
-        const patternId = match.payload.mysql_id;
-        const score = match.score;
-
-        console.log(
-          `  -> Pattern ${patternId}, score: ${score.toFixed(4)}`
-        );
-
-        if (score < SIMILARITY_THRESHOLD) {
-          continue;
-        }
-
+      // Only flag patterns above the similarity threshold
+      if (match.score >= SIMILARITY_THRESHOLD) {
+        // Get the category associated with this risk pattern
         const [[pattern]] = await db.execute(
-          `SELECT category_id
-           FROM risk_patterns
-           WHERE pattern_id = ?`,
-          [patternId]
+          'SELECT category_id FROM risk_patterns WHERE pattern_id = ?',
+          [match.payload.mysql_id]
         );
 
+        // Safety check in case the pattern does not exist in MySQL
         if (!pattern) {
           console.log(
-            `     Pattern ${patternId} not found in MySQL, skipping.`
+            `     Pattern ${match.payload.mysql_id} not found in MySQL, skipping.`
           );
           continue;
         }
 
+        // Avoid duplicate flags if the analysis is run multiple times
         const [[existing]] = await db.execute(
           `SELECT flag_id
            FROM risk_flags
-           WHERE clause_id = ?
-             AND pattern_id = ?`,
-          [clause.clause_id, patternId]
+           WHERE clause_id = ? AND pattern_id = ?`,
+          [clause.clause_id, match.payload.mysql_id]
         );
 
         if (!existing) {
+          // Store the detected risk flag in MySQL
           await db.execute(
             `INSERT INTO risk_flags
-              (clause_id, pattern_id, similarity_score, category_id)
+             (clause_id, pattern_id, similarity_score, category_id)
              VALUES (?, ?, ?, ?)`,
             [
               clause.clause_id,
-              patternId,
-              score,
+              match.payload.mysql_id,
+              match.score,
               pattern.category_id
             ]
           );
@@ -80,18 +83,21 @@ async function main() {
             `     Flagged! (category ${pattern.category_id})`
           );
         } else {
-          console.log(`     Already flagged, skipping.`);
+          console.log(
+            `     Already flagged, skipping.`
+          );
         }
       }
     }
-
-    console.log('\nDone analyzing all clauses.');
-  } finally {
-    await db.end();
   }
+
+  await db.end();
+
+  console.log('\nDone analyzing all clauses.');
 }
 
 main().catch((error) => {
-  console.error('Risk analysis failed:', error);
+  console.error('\nError during risk analysis:');
+  console.error(error);
   process.exit(1);
 });
