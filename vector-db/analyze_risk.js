@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { pipeline } from '@xenova/transformers';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import mysql from 'mysql2/promise';
@@ -10,8 +11,12 @@ async function main() {
   const embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
 
   const db = await mysql.createConnection({
-    host: 'localhost', user: 'root', password: 'Every1is=', database: 'contract_risk_db'
-  });
+  host: process.env.MYSQL_HOST,
+  port: Number(process.env.MYSQL_PORT),
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE
+});
 
   // Get all clauses that haven't been flagged yet
   const [clauses] = await db.execute('SELECT clause_id, clause_text FROM clauses');
