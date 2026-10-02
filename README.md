@@ -14,3 +14,5 @@ to detect high-risk contract clauses via semantic similarity.
 2. Run the SQL files in `database/schema/` in order (01, then 02) using MySQL Workbench.
 3. Run `database/seed/sample_data.sql` to load test data.
 4. (Later phases) Start Qdrant via `vector-db/docker-compose.yml`.
+# Contract-Risk-Clause-Intelligence
+Contract Risk &amp; Clause Intelligence Platform using Next.js, MySQL and Vector Database
