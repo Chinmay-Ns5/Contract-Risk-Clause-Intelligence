@@ -7,7 +7,7 @@ const qdrant = new QdrantClient({ url: 'http://localhost:6333' });
 const COLLECTION = 'risk_clauses';
 const SIMILARITY_THRESHOLD = 0.35; // calibrated based on testing with all-MiniLM-L6-v2 // tweak this later based on real results
 
-async function main() {
+export async function runAnalysis(contractId) {
   const embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
 
   const db = await mysql.createConnection({
@@ -70,4 +70,3 @@ const results = searchResponse.points;
   console.log('\nDone analyzing all clauses.');
 }
 
-main();
