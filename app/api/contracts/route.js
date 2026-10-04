@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+
+import { getSessionUser, hasRole } from '@/app/lib/auth';
 import { getDb } from '@/app/lib/db';
 import { extractClausesFromPdf } from '@/app/lib/contract-upload';
 import { generateEmbedding } from '@/vector-db/embedding';
@@ -17,27 +19,35 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const user = await getSessionUser(request);
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+  }
+  if (!hasRole(user, ['admin'])) {
+    return NextResponse.json({ error: 'Admin role required to create contracts.' }, { status: 403 });
+  }
+
   if (request.headers.get('content-type')?.includes('multipart/form-data')) {
-    return uploadPdfContract(request);
+    return uploadPdfContract(request, user);
   }
 
   const db = getDb();
   const body = await request.json();
-  const { title, uploaded_by, file_path } = body;
+  const { title, file_path } = body;
 
-  if (!title || !uploaded_by) {
-    return NextResponse.json({ error: 'title and uploaded_by are required' }, { status: 400 });
+  if (!title) {
+    return NextResponse.json({ error: 'title is required' }, { status: 400 });
   }
 
   const [result] = await db.execute(
     'INSERT INTO contracts (title, uploaded_by, file_path, status) VALUES (?, ?, ?, "pending")',
-    [title, uploaded_by, file_path || null]
+    [title, user.user_id, file_path || null]
   );
 
   return NextResponse.json({ contract_id: result.insertId, title, status: 'pending' }, { status: 201 });
 }
 
-async function uploadPdfContract(request) {
+async function uploadPdfContract(request, user) {
   let formData;
 
   try {
@@ -47,7 +57,7 @@ async function uploadPdfContract(request) {
   }
 
   const file = formData.get('file');
-  const uploadedBy = Number(formData.get('uploaded_by'));
+  const uploadedBy = Number(user.user_id);
   const titleInput = String(formData.get('title') || '').trim();
 
   if (!file || typeof file.arrayBuffer !== 'function') {
@@ -60,10 +70,6 @@ async function uploadPdfContract(request) {
 
   if (file.size > MAX_UPLOAD_BYTES) {
     return NextResponse.json({ error: 'PDF files must be 20 MB or smaller.' }, { status: 413 });
-  }
-
-  if (!Number.isInteger(uploadedBy) || uploadedBy <= 0) {
-    return NextResponse.json({ error: 'Enter a valid uploader user ID.' }, { status: 400 });
   }
 
   let bytes;

@@ -1,6 +1,5 @@
 'use client';
-
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
@@ -21,12 +20,23 @@ function RiskReviewContent() {
   const [feedback, setFeedback] = useState('');
   const [reviewingFlagId, setReviewingFlagId] = useState(null);
   const [selectedFlag, setSelectedFlag] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetchFlags();
-  }, [contractId]);
+    fetch('/api/auth/session')
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Authentication required.');
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      })
+      .catch(() => {
+        setUser(null);
+        localStorage.removeItem('user');
+      });
+  }, []);
 
-  async function fetchFlags() {
+  const fetchFlags = useCallback(async () => {
     try {
       setLoading(true);
       setLoadError('');
@@ -60,7 +70,11 @@ function RiskReviewContent() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [numericContractId]);
+
+  useEffect(() => {
+    queueMicrotask(() => fetchFlags());
+  }, [fetchFlags]);
 
   async function markReviewed(flagId) {
     try {
@@ -73,7 +87,8 @@ function RiskReviewContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          reviewer_id: 1,
+          reviewer_id: user.user_id,
+          role_name: user.role_name,
         }),
       });
 
@@ -274,10 +289,17 @@ function RiskReviewContent() {
 
           <div className="flex flex-wrap items-center justify-end gap-3">
             <Link
-              href="/"
+              href="/dashboard"
               className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               ← Back to dashboard
+            </Link>
+
+            <Link
+              href="/obligations"
+              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              Obligations
             </Link>
 
             <div className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 shadow-sm flex items-center gap-2">
@@ -688,7 +710,7 @@ function RiskReviewContent() {
                               View
                             </button>
 
-                            {Number(flag.reviewed) === 0 && (
+                            {Number(flag.reviewed) === 0 && ['admin', 'reviewer'].includes(String(user?.role_name || '').toLowerCase()) && (
                               <button
                                 type="button"
                                 onClick={() => markReviewed(flag.flag_id)}

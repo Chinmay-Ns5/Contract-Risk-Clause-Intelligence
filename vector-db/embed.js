@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { pipeline } from '@xenova/transformers';
+import { pipeline } from '@huggingface/transformers';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import mysql from 'mysql2/promise';
 

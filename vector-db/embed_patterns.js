@@ -1,4 +1,5 @@
-import { pipeline } from '@xenova/transformers';
+import 'dotenv/config';
+import { pipeline } from '@huggingface/transformers';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import mysql from 'mysql2/promise';
 
@@ -10,7 +11,6 @@ const COLLECTION = process.env.QDRANT_COLLECTION || 'risk_clauses';
 
 async function main() {
   console.log('Loading embedding model...');
-
   const embedder = await pipeline(
     'feature-extraction',
     'Xenova/all-MiniLM-L6-v2'
@@ -40,7 +40,6 @@ async function main() {
   }
 
   console.log('Connecting to MySQL...');
-
   const db = await mysql.createConnection({
     host: process.env.MYSQL_HOST,
     port: Number(process.env.MYSQL_PORT),
@@ -54,7 +53,6 @@ async function main() {
   );
 
   console.log(`Found ${patterns.length} risk patterns.`);
-
   for (const pattern of patterns) {
     const output = await embedder(
       pattern.pattern_text,
@@ -66,7 +64,7 @@ async function main() {
 
     const vector = Array.from(output.data);
 
-    // Keep pattern IDs separate from clause IDs
+  // Keep pattern IDs separate from clause IDs
     const qdrantId = 10000 + pattern.pattern_id;
 
     await qdrant.upsert(COLLECTION, {

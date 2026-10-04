@@ -4,8 +4,16 @@ USE contract_risk_db;
 INSERT INTO roles (role_name) VALUES ('Admin'), ('Reviewer'), ('Viewer');
 
 INSERT INTO users (name, email, password_hash, role_id)
-VALUES ('Alice Admin', 'alice@test.com', 'hashed_pw_1', 1),
-       ('Bob Reviewer', 'bob@test.com', 'hashed_pw_2', 2);
+SELECT 'Alice Admin', 'alice@test.com', '$2b$12$SYD9YA5qlzNM2jYUbRsVuODCx78Qm6iywBC/OXf7RFL0DNVQfLFme', role_id
+FROM roles WHERE role_name = 'Admin';
+
+INSERT INTO users (name, email, password_hash, role_id)
+SELECT 'Bob Reviewer', 'bob@test.com', '$2b$12$6SUQ.5P.zWZZx5/RkfSNzOt.o20Fq2XYU2nM4SplpBwJZew9NSn56', role_id
+FROM roles WHERE role_name = 'Reviewer';
+
+INSERT INTO users (name, email, password_hash, role_id)
+SELECT 'Casey Viewer', 'casey@test.com', '$2b$12$UvHMVELUoVCxJ8qd7MqzEe5m8GP2Tqr3X2n.Q60uJtzkZjiQPwl8W', role_id
+FROM roles WHERE role_name = 'Viewer';
 
 INSERT INTO risk_categories (category_name)
 VALUES ('Liability'), ('Indemnity'), ('Termination'), ('Automatic Renewal');

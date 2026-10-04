@@ -10,19 +10,32 @@ export default function Home() {
   const [analysisResults, setAnalysisResults] = useState({});
   const [selectedContractId, setSelectedContractId] = useState(null);
   const analysisLock = useRef(false);
+  const [sessionUser, setSessionUser] = useState(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadTitle, setUploadTitle] = useState('');
-  const [users, setUsers] = useState([]);
-  const [usersLoading, setUsersLoading] = useState(true);
-  const [usersError, setUsersError] = useState('');
-  const [uploadedBy, setUploadedBy] = useState(null);
   const [uploading, setUploading] = useState(false);
   const uploadLock = useRef(false);
 
   useEffect(() => {
     fetchContracts();
-    fetchUsers();
+    fetchSession();
   }, []);
+
+  async function fetchSession() {
+    try {
+      const response = await fetch('/api/auth/session');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Authentication required.');
+      setSessionUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+    } catch {
+      setSessionUser(null);
+      localStorage.removeItem('user');
+    } finally {
+      setSessionLoading(false);
+    }
+  }
 
   async function fetchContracts() {
     try {
@@ -50,44 +63,6 @@ export default function Home() {
       });
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function fetchUsers() {
-    try {
-      setUsersLoading(true);
-      setUsersError('');
-
-      const response = await fetch('/api/users');
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error || 'Unable to load users.');
-      }
-
-      if (!Array.isArray(data)) {
-        throw new Error('The users API returned an unexpected response.');
-      }
-
-      const availableUsers = data
-        .map((user) => ({
-          user_id: Number(user.user_id),
-          name: String(user.name || '').trim(),
-        }))
-        .filter((user) => Number.isInteger(user.user_id) && user.user_id > 0 && user.name);
-
-      setUsers(availableUsers);
-      setUploadedBy((currentUserId) => (
-        availableUsers.some((user) => user.user_id === currentUserId)
-          ? currentUserId
-          : availableUsers[0]?.user_id ?? null
-      ));
-    } catch (error) {
-      setUsers([]);
-      setUploadedBy(null);
-      setUsersError(error.message || 'Unable to load users.');
-    } finally {
-      setUsersLoading(false);
     }
   }
 
@@ -152,9 +127,9 @@ export default function Home() {
       return;
     }
 
-    const uploaderId = uploadedBy;
-    if (!Number.isInteger(uploaderId) || !users.some((user) => user.user_id === uploaderId)) {
-      setMessage({ type: 'error', text: 'Select a valid uploader user.' });
+    const uploaderId = Number(sessionUser?.user_id);
+    if (!Number.isInteger(uploaderId) || String(sessionUser?.role_name || '').toLowerCase() !== 'admin') {
+      setMessage({ type: 'error', text: 'An authenticated Admin account is required to upload contracts.' });
       return;
     }
 
@@ -169,6 +144,7 @@ export default function Home() {
       formData.set('file', selectedFile);
       formData.set('title', uploadTitle.trim());
       formData.set('uploaded_by', String(uploaderId));
+      formData.set('role_name', sessionUser.role_name);
 
       const response = await fetch('/api/contracts', {
         method: 'POST',
@@ -391,6 +367,7 @@ export default function Home() {
 
         </section>
 
+        {!sessionLoading && String(sessionUser?.role_name || '').toLowerCase() === 'admin' && (
         <section className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-5">
             <h2 className="text-lg font-semibold text-gray-950">Upload a contract</h2>
@@ -413,37 +390,12 @@ export default function Home() {
             </label>
 
             <label className="text-sm font-medium text-gray-700">
-              Uploader user
-              <select
-                required
-                value={uploadedBy ?? ''}
-                disabled={usersLoading || Boolean(usersError) || users.length === 0}
-                onChange={(event) => setUploadedBy(Number(event.target.value))}
-                className="mt-1.5 w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm font-normal outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
-              >
-                {usersLoading ? (
-                  <option value="">Loading users...</option>
-                ) : usersError ? (
-                  <option value="">Users unavailable</option>
-                ) : users.length === 0 ? (
-                  <option value="">No users available</option>
-                ) : (
-                  users.map((user) => (
-                    <option key={user.user_id} value={user.user_id}>
-                      {user.name} (ID: {user.user_id})
-                    </option>
-                  ))
-                )}
-              </select>
-              {usersError ? (
-                <span role="alert" className="mt-1 block text-xs font-normal text-red-600">
-                  {usersError}
-                </span>
-              ) : users.length === 0 && !usersLoading ? (
-                <span className="mt-1 block text-xs font-normal text-amber-700">
-                  No users available. Please create a user before uploading a contract.
-                </span>
-              ) : null}
+              Uploader
+              <input
+                readOnly
+                value={`${sessionUser.name} (ID: ${sessionUser.user_id})`}
+                className="mt-1.5 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm font-normal text-gray-600"
+              />
             </label>
 
             <label className="text-sm font-medium text-gray-700">
@@ -467,7 +419,7 @@ export default function Home() {
             <div className="flex items-end">
               <button
                 type="submit"
-                disabled={uploading || !selectedFile || usersLoading || Boolean(usersError) || users.length === 0 || !Number.isInteger(uploadedBy)}
+                disabled={uploading || !selectedFile || !Number.isInteger(Number(sessionUser?.user_id))}
                 className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
               >
                 {uploading ? (
@@ -482,6 +434,7 @@ export default function Home() {
             </div>
           </form>
         </section>
+        )}
 
         {/* Contracts section */}
         <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
