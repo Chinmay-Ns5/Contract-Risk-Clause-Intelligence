@@ -1,99 +1,66 @@
 import 'dotenv/config';
-import { pipeline } from '@huggingface/transformers';
-import { QdrantClient } from '@qdrant/js-client-rest';
+import path from 'node:path';
 import mysql from 'mysql2/promise';
+import { fileURLToPath } from 'node:url';
 
-const qdrant = new QdrantClient({
-  url: process.env.QDRANT_URL
-});
+import { generateEmbedding } from './embedding.js';
+import qdrant, { COLLECTION, ensureCollection } from './qdrant.js';
 
-const COLLECTION = process.env.QDRANT_COLLECTION || 'risk_clauses';
-
-async function main() {
-  console.log('Loading embedding model...');
-  const embedder = await pipeline(
-    'feature-extraction',
-    'Xenova/all-MiniLM-L6-v2'
-  );
-
-  console.log('Checking Qdrant collection...');
-
-  // Create collection if it does not already exist
-  try {
-    await qdrant.createCollection(COLLECTION, {
-      vectors: {
-        size: 384,
-        distance: 'Cosine'
-      }
-    });
-
-    console.log(`Created Qdrant collection: ${COLLECTION}`);
-  } catch (error) {
-    if (
-      error?.status === 409 ||
-      error?.data?.status?.error?.includes('already exists')
-    ) {
-      console.log(`Collection '${COLLECTION}' already exists.`);
-    } else {
-      throw error;
-    }
-  }
-
-  console.log('Connecting to MySQL...');
-  const db = await mysql.createConnection({
-    host: process.env.MYSQL_HOST,
-    port: Number(process.env.MYSQL_PORT),
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE
-  });
+export async function embedRiskPatterns(db) {
+  await ensureCollection();
 
   const [patterns] = await db.execute(
     'SELECT pattern_id, pattern_text FROM risk_patterns'
   );
 
-  console.log(`Found ${patterns.length} risk patterns.`);
   for (const pattern of patterns) {
-    const output = await embedder(
-      pattern.pattern_text,
-      {
-        pooling: 'mean',
-        normalize: true
-      }
-    );
-
-    const vector = Array.from(output.data);
-
-  // Keep pattern IDs separate from clause IDs
-    const qdrantId = 10000 + pattern.pattern_id;
+    const vector = await generateEmbedding(pattern.pattern_text);
+    const vectorId = 10000 + pattern.pattern_id;
 
     await qdrant.upsert(COLLECTION, {
-      points: [
-        {
-          id: qdrantId,
-          vector: vector,
-          payload: {
-            mysql_id: pattern.pattern_id,
-            type: 'pattern'
-          }
-        }
-      ]
+      points: [{
+        id: vectorId,
+        vector,
+        payload: {
+          mysql_id: pattern.pattern_id,
+          type: 'pattern',
+        },
+      }],
+      wait: true,
     });
 
     await db.execute(
       'UPDATE risk_patterns SET vector_id = ? WHERE pattern_id = ?',
-      [String(qdrantId), pattern.pattern_id]
+      [String(vectorId), pattern.pattern_id]
     );
-
-    console.log(`Embedded pattern ${pattern.pattern_id}`);
   }
 
-  await db.end();
-
-  console.log('Done embedding patterns.');
+  return patterns.length;
 }
 
-main().catch((error) => {
-  console.error('Embedding failed:', error);
-  process.exit(1);
-});
+async function main() {
+  const db = await mysql.createConnection({
+    host: process.env.MYSQL_HOST,
+    port: Number(process.env.MYSQL_PORT || 3306),
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+  });
+
+  try {
+    const count = await embedRiskPatterns(db);
+    console.log(`Embedded ${count} risk pattern(s).`);
+  } finally {
+    await db.end();
+  }
+}
+
+const currentFile = path.resolve(fileURLToPath(import.meta.url));
+const executedFile = process.argv[1] ? path.resolve(process.argv[1]) : null;
+
+if (executedFile && currentFile === executedFile) {
+  main().catch((error) => {
+    console.error('Embedding failed:', error);
+    process.exitCode = 1;
+  });
+}

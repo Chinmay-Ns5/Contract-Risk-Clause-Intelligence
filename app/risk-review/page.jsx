@@ -1,14 +1,70 @@
 'use client';
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+async function readApiResponse(response) {
+  const ok = response.ok;
+  const { status, statusText } = response;
+  const body = await response.text();
+  const trimmedBody = body.trim();
+  let data = null;
+
+  if (trimmedBody) {
+    try {
+      data = JSON.parse(trimmedBody);
+    } catch {
+      data = null;
+    }
+  }
+
+  const bodyMessage = trimmedBody
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 400);
+
+  if (!ok) {
+    throw new Error(
+      data?.error
+      || bodyMessage
+      || `Request failed (${status} ${statusText}).`
+    );
+  }
+
+  if (!trimmedBody) {
+    throw new Error(`The API returned an empty response (${status}).`);
+  }
+
+  if (data === null) {
+    throw new Error(
+      `The API returned a non-JSON response (${status}): ${bodyMessage || 'No readable response body.'}`
+    );
+  }
+
+  return data;
+}
 
 function RiskReviewContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const contractId = searchParams.get('contractId');
   const numericContractId = contractId === null ? null : Number(contractId);
 
+  const [contracts, setContracts] = useState([]);
+  const [contractsLoading, setContractsLoading] = useState(true);
+  const [contractsError, setContractsError] = useState('');
+  const [selectedContract, setSelectedContract] = useState(null);
+  const [contractError, setContractError] = useState('');
   const [flags, setFlags] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [riskFilter, setRiskFilter] = useState('');
@@ -18,46 +74,72 @@ function RiskReviewContent() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [feedback, setFeedback] = useState('');
-  const [reviewingFlagId, setReviewingFlagId] = useState(null);
+  const [reviewingFlagIds, setReviewingFlagIds] = useState(() => new Set());
+  const reviewingFlagIdsRef = useRef(new Set());
   const [selectedFlag, setSelectedFlag] = useState(null);
   const [user, setUser] = useState(null);
+  const [sessionError, setSessionError] = useState('');
 
   useEffect(() => {
-    fetch('/api/auth/session')
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Authentication required.');
+    async function loadSession() {
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await readApiResponse(response);
+        if (!data.user) throw new Error('The session API did not return a user.');
         setUser(data.user);
+        setSessionError('');
         localStorage.setItem('user', JSON.stringify(data.user));
-      })
-      .catch(() => {
+      } catch (error) {
         setUser(null);
         localStorage.removeItem('user');
-      });
+        setSessionError(error.message || 'Unable to load the current user session.');
+      }
+    }
+
+    loadSession();
   }, []);
 
+  const fetchContracts = useCallback(async () => {
+    try {
+      setContractsLoading(true);
+      setContractsError('');
+
+      const response = await fetch('/api/contracts');
+      const data = await readApiResponse(response);
+      if (!Array.isArray(data)) {
+        throw new Error('The contracts API returned an unexpected response.');
+      }
+
+      setContracts(data);
+    } catch (error) {
+      setContracts([]);
+      setContractsError(error.message || 'Unable to load contracts.');
+    } finally {
+      setContractsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (numericContractId === null) {
+      queueMicrotask(() => fetchContracts());
+    }
+  }, [fetchContracts, numericContractId]);
+
   const fetchFlags = useCallback(async () => {
+    if (numericContractId === null || !Number.isInteger(numericContractId) || numericContractId <= 0) {
+      setFlags([]);
+      setLoading(false);
+      if (numericContractId !== null) setLoadError('Invalid contract ID.');
+      return;
+    }
+
     try {
       setLoading(true);
       setLoadError('');
 
-      if (numericContractId === null) {
-        throw new Error('Missing contract ID. Choose a contract from the dashboard.');
-      }
-
-      if (!Number.isInteger(numericContractId) || numericContractId <= 0) {
-        throw new Error('Invalid contract ID');
-      }
-
       const url = `/api/risk-flags?contractId=${numericContractId}`;
-
-      const res = await fetch(url);
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.error || 'Failed to fetch risk flags');
-      }
+      const response = await fetch(url);
+      const data = await readApiResponse(response);
 
       if (!data || data.success !== true || !Array.isArray(data.flags)) {
         throw new Error('The risk flags API returned an unexpected response.');
@@ -76,37 +158,89 @@ function RiskReviewContent() {
     queueMicrotask(() => fetchFlags());
   }, [fetchFlags]);
 
+  useEffect(() => {
+    if (numericContractId === null || !Number.isInteger(numericContractId) || numericContractId <= 0) {
+      queueMicrotask(() => {
+        setSelectedContract(null);
+        setContractError('');
+      });
+      return;
+    }
+
+    let cancelled = false;
+    async function loadContract() {
+      try {
+        setSelectedContract(null);
+        setContractError('');
+        const response = await fetch(`/api/contracts/${numericContractId}`);
+        const data = await readApiResponse(response);
+        if (!cancelled) setSelectedContract(data);
+      } catch (error) {
+        if (!cancelled) {
+          setSelectedContract(null);
+          setContractError(error.message || 'Unable to load contract information.');
+        }
+      }
+    }
+
+    loadContract();
+    return () => {
+      cancelled = true;
+    };
+  }, [numericContractId]);
+
   async function markReviewed(flagId) {
+    if (reviewingFlagIdsRef.current.has(flagId)) return;
+
     try {
-      setReviewingFlagId(flagId);
+      if (!user?.user_id) {
+        throw new Error(sessionError || 'Sign in before marking a risk flag as reviewed.');
+      }
+
+      reviewingFlagIdsRef.current.add(flagId);
+      setReviewingFlagIds(new Set(reviewingFlagIdsRef.current));
       setFeedback('');
 
-      const res = await fetch(`/api/risk-flags/${flagId}`, {
+      const response = await fetch(`/api/risk-flags/${flagId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           reviewer_id: user.user_id,
-          role_name: user.role_name,
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const data = await readApiResponse(response);
+      if (!data?.success) throw new Error(data?.error || 'Failed to mark flag as reviewed.');
 
-      if (!res.ok || !data?.success) {
-        throw new Error(
-          data?.error || 'Failed to mark flag as reviewed'
-        );
-      }
-
-      await fetchFlags();
+      setFlags((currentFlags) => currentFlags.map((flag) => (
+        Number(flag.flag_id) === Number(flagId)
+          ? {
+              ...flag,
+              reviewed: 1,
+              reviewer_id: data.reviewer_id,
+              reviewer_name: data.reviewer_name,
+            }
+          : flag
+      )));
+      setSelectedFlag((currentFlag) => (
+        Number(currentFlag?.flag_id) === Number(flagId)
+          ? {
+              ...currentFlag,
+              reviewed: 1,
+              reviewer_id: data.reviewer_id,
+              reviewer_name: data.reviewer_name,
+            }
+          : currentFlag
+      ));
       setFeedback('Risk flag marked as reviewed.');
     } catch (error) {
       console.error('Failed to mark flag as reviewed:', error);
       setFeedback(error.message || 'Failed to mark flag as reviewed.');
     } finally {
-      setReviewingFlagId(null);
+      reviewingFlagIdsRef.current.delete(flagId);
+      setReviewingFlagIds(new Set(reviewingFlagIdsRef.current));
     }
   }
 
@@ -125,7 +259,7 @@ function RiskReviewContent() {
 
   const contractTitle = flags.find(
     (flag) => Number(flag.contract_id) === numericContractId
-  )?.contract_title;
+  )?.contract_title || selectedContract?.title;
 
   /*
    * Convert similarity score into a human-readable risk level.
@@ -254,6 +388,100 @@ function RiskReviewContent() {
     (flag) => Number(flag.reviewed) === 0
   ).length;
 
+  if (contractId === null) {
+    return (
+      <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">
+                Contract intelligence
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+                Select Contract
+              </h1>
+              <p className="mt-2 text-slate-600">
+                Choose an existing contract to view and review its detected risks.
+              </p>
+            </div>
+            <Link
+              href="/dashboard"
+              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              ← Back to dashboard
+            </Link>
+          </div>
+
+          {contractsLoading ? (
+            <p className="rounded-xl border border-slate-200 bg-white p-6 text-slate-600">
+              Loading existing contracts...
+            </p>
+          ) : contractsError ? (
+            <div className="rounded-xl border border-red-200 bg-white p-6" role="alert">
+              <p className="font-medium text-red-700">Unable to load contracts</p>
+              <p className="mt-1 text-sm text-red-600">{contractsError}</p>
+              <button
+                type="button"
+                onClick={fetchContracts}
+                className="mt-4 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Retry
+              </button>
+            </div>
+          ) : contracts.length === 0 ? (
+            <p className="rounded-xl border border-slate-200 bg-white p-6 text-slate-600">
+              No existing contracts are available to review.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {contracts.map((contract) => (
+                <article
+                  key={contract.contract_id}
+                  className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <h2 className="font-semibold text-slate-900">
+                      #{contract.contract_id} {contract.title}
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Status: {contract.status || 'Unknown'}
+                      {contract.upload_date
+                        ? ` · Uploaded ${formatDateTime(contract.upload_date)}`
+                        : ''}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/risk-review?contractId=${contract.contract_id}`)}
+                    className="shrink-0 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+                  >
+                    Review Risks
+                  </button>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    );
+  }
+
+  if (!Number.isInteger(numericContractId) || numericContractId <= 0) {
+    return (
+      <main className="min-h-screen bg-slate-50 px-4 py-12 text-slate-900">
+        <div className="mx-auto max-w-3xl rounded-xl border border-red-200 bg-white p-6" role="alert">
+          <h1 className="text-xl font-semibold text-red-700">Invalid contract ID</h1>
+          <p className="mt-2 text-sm text-red-600">
+            The contractId query parameter must be a positive integer.
+          </p>
+          <Link href="/risk-review" className="mt-4 inline-flex text-sm font-medium text-blue-700 hover:underline">
+            Select an existing contract
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -311,6 +539,46 @@ function RiskReviewContent() {
             </div>
           </div>
         </div>
+
+        <section className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold">
+            {selectedContract?.title || contractTitle || `Contract #${numericContractId}`}
+          </h2>
+          <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+            <div>
+              <dt className="text-slate-500">Contract ID</dt>
+              <dd className="font-medium">#{numericContractId}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Status</dt>
+              <dd className="font-medium">{selectedContract?.status || '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Upload date</dt>
+              <dd className="font-medium">
+                {selectedContract?.upload_date
+                  ? formatDateTime(selectedContract.upload_date)
+                  : '—'}
+              </dd>
+            </div>
+          </dl>
+          {contractError && (
+            <p className="mt-3 text-sm text-red-600" role="alert">
+              Unable to load contract information: {contractError}
+            </p>
+          )}
+          {sessionError && (
+            <p className="mt-3 text-sm text-amber-700" role="status">
+              Review actions are unavailable: {sessionError}
+            </p>
+          )}
+          <Link
+            href="/risk-review"
+            className="mt-4 inline-flex text-sm font-medium text-blue-700 hover:underline"
+          >
+            Choose another contract
+          </Link>
+        </section>
 
         {feedback && (
           <p
@@ -689,6 +957,7 @@ function RiskReviewContent() {
                           {Number(flag.reviewed) === 1 ? (
                             <span className="text-emerald-600 text-xs font-medium">
                               ✓ Reviewed
+                              {flag.reviewer_name ? ` by ${flag.reviewer_name}` : ''}
                             </span>
                           ) : (
                             <span className="text-amber-600 text-xs font-medium">
@@ -710,18 +979,22 @@ function RiskReviewContent() {
                               View
                             </button>
 
-                            {Number(flag.reviewed) === 0 && ['admin', 'reviewer'].includes(String(user?.role_name || '').toLowerCase()) && (
+                            {Number(flag.reviewed) === 1 ? (
+                              <span className="text-xs font-medium text-emerald-700">
+                                Reviewed
+                              </span>
+                            ) : ['admin', 'reviewer'].includes(String(user?.role_name || '').toLowerCase()) ? (
                               <button
                                 type="button"
                                 onClick={() => markReviewed(flag.flag_id)}
-                                disabled={reviewingFlagId === flag.flag_id}
+                                disabled={reviewingFlagIds.has(flag.flag_id)}
                                 className="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline disabled:cursor-wait disabled:opacity-50"
                               >
-                                {reviewingFlagId === flag.flag_id
+                                {reviewingFlagIds.has(flag.flag_id)
                                   ? 'Saving...'
-                                  : 'Mark reviewed'}
+                                  : 'Mark as Reviewed'}
                               </button>
-                            )}
+                            ) : null}
                           </div>
 
                         </td>
@@ -808,7 +1081,15 @@ function RiskReviewContent() {
                 <div>
                   <dt className="text-slate-500">Review status</dt>
                   <dd className="mt-1 font-medium text-slate-900">
-                    {Number(selectedFlag.reviewed) === 1 ? 'Reviewed' : 'Pending'}
+                    {Number(selectedFlag.reviewed) === 1
+                      ? `Reviewed${selectedFlag.reviewer_name ? ` by ${selectedFlag.reviewer_name}` : ''}`
+                      : 'Pending'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-slate-500">Matched risk pattern</dt>
+                  <dd className="mt-1 font-medium text-slate-900">
+                    {selectedFlag.pattern_text || '—'}
                   </dd>
                 </div>
                 <div>

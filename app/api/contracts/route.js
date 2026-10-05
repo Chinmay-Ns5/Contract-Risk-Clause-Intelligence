@@ -5,8 +5,10 @@ import path from 'node:path';
 import { getSessionUser, hasRole } from '@/app/lib/auth';
 import { getDb } from '@/app/lib/db';
 import { extractClausesFromPdf } from '@/app/lib/contract-upload';
+import { runAnalysis } from '@/vector-db/analyze_risk';
 import { generateEmbedding } from '@/vector-db/embedding';
-import qdrant, { COLLECTION } from '@/vector-db/qdrant';
+import { embedRiskPatterns } from '@/vector-db/embed_patterns';
+import qdrant, { COLLECTION, ensureCollection } from '@/vector-db/qdrant';
 import { NextResponse } from 'next/server';
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
@@ -121,6 +123,7 @@ async function uploadPdfContract(request, user) {
 
   activeUploads.add(filePath);
   let createdFile = false;
+  let contractSaved = false;
 
   try {
     await mkdir(storageDirectory, { recursive: true });
@@ -141,21 +144,29 @@ async function uploadPdfContract(request, user) {
     );
 
     if (existingContract) {
+      contractSaved = true;
       const [existingClauses] = await db.execute(
         'SELECT clause_id, clause_text FROM clauses WHERE contract_id = ? ORDER BY clause_order',
         [existingContract.contract_id]
       );
-      const warning = await indexClauseEmbeddings(existingClauses, db);
+      await indexClauseEmbeddings(existingClauses, db);
+      const patternsEmbedded = await embedRiskPatterns(db);
+      const analysis = await runAnalysis(existingContract.contract_id);
+      await db.execute(
+        `UPDATE contracts SET status = 'analyzed' WHERE contract_id = ?`,
+        [existingContract.contract_id]
+      );
 
       return NextResponse.json({
         success: true,
         already_exists: true,
         contract_id: existingContract.contract_id,
         title: existingContract.title,
-        status: existingContract.status,
+        status: 'analyzed',
         clauses_created: existingClauses.length,
-        embeddings_stored: !warning,
-        warning,
+        embeddings_stored: true,
+        patterns_embedded: patternsEmbedded,
+        analysis,
       });
     }
 
@@ -180,6 +191,7 @@ async function uploadPdfContract(request, user) {
       }
 
       await connection.commit();
+      contractSaved = true;
     } catch (error) {
       await connection.rollback();
       throw error;
@@ -195,19 +207,27 @@ async function uploadPdfContract(request, user) {
       'SELECT clause_id, clause_text FROM clauses WHERE contract_id = ? ORDER BY clause_order',
       [contractId]
     );
-    const warning = await indexClauseEmbeddings(savedClauses, db);
+    await indexClauseEmbeddings(savedClauses, db);
+    const patternsEmbedded = await embedRiskPatterns(db);
+    const analysis = await runAnalysis(contractId);
+    await db.execute(
+      `UPDATE contracts SET status = 'analyzed' WHERE contract_id = ?`,
+      [contractId]
+    );
 
     return NextResponse.json({
       success: true,
       ...contract,
+      status: 'analyzed',
       file_path: filePath,
       clauses_created: savedClauses.length,
-      embeddings_stored: !warning,
-      warning,
+      embeddings_stored: true,
+      patterns_embedded: patternsEmbedded,
+      analysis,
     }, { status: 201 });
   } catch (error) {
     console.error('Contract upload failed:', error);
-    if (createdFile) {
+    if (createdFile && !contractSaved) {
       await unlink(storagePath).catch(() => {});
     }
 
@@ -218,42 +238,39 @@ async function uploadPdfContract(request, user) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Unable to save the uploaded contract. Please try again.' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: contractSaved
+        ? `Contract was saved, but risk detection failed: ${error.message || 'Unknown analysis error.'}`
+        : `Unable to save the uploaded contract: ${error.message || 'Unknown upload error.'}`,
+      contract_saved: contractSaved,
+    }, { status: 500 });
   } finally {
     activeUploads.delete(filePath);
   }
 }
 
 async function indexClauseEmbeddings(clauses, db) {
-  try {
-    const points = [];
+  await ensureCollection();
+  const points = [];
 
-    for (const clause of clauses) {
-      const vector = await generateEmbedding(clause.clause_text);
-      points.push({
-        id: clause.clause_id,
-        vector,
-        payload: { mysql_id: clause.clause_id, type: 'clause' },
-      });
+  for (const clause of clauses) {
+    const vector = await generateEmbedding(clause.clause_text);
+    points.push({
+      id: clause.clause_id,
+      vector,
+      payload: { mysql_id: clause.clause_id, type: 'clause' },
+    });
+  }
+
+  if (points.length > 0) {
+    await qdrant.upsert(COLLECTION, { points, wait: true });
+
+    for (const point of points) {
+      await db.execute(
+        'UPDATE clauses SET vector_id = ? WHERE clause_id = ?',
+        [String(point.id), point.id]
+      );
     }
-
-    if (points.length > 0) {
-      await qdrant.upsert(COLLECTION, { points, wait: true });
-
-      for (const point of points) {
-        await db.execute(
-          'UPDATE clauses SET vector_id = ? WHERE clause_id = ?',
-          [String(point.id), point.id]
-        );
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Uploaded clause embedding failed:', error);
-    return 'The contract and clauses were saved, but clause embeddings could not be stored. The contract remains pending.';
   }
 }

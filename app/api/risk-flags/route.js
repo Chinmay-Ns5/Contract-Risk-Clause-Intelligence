@@ -34,6 +34,7 @@ export async function GET(request) {
         rf.similarity_score,
         rf.reviewed,
         rf.reviewer_id,
+        reviewer.name AS reviewer_name,
         rf.flagged_at,
 
         cl.contract_id,
@@ -42,7 +43,8 @@ export async function GET(request) {
 
         ct.title AS contract_title,
 
-        rc.category_name
+        rc.category_name,
+        rp.pattern_text
 
       FROM risk_flags rf
 
@@ -52,8 +54,14 @@ export async function GET(request) {
       JOIN contracts ct
         ON cl.contract_id = ct.contract_id
 
-      JOIN risk_categories rc
+      LEFT JOIN risk_categories rc
         ON rf.category_id = rc.category_id
+
+      LEFT JOIN risk_patterns rp
+        ON rf.pattern_id = rp.pattern_id
+
+      LEFT JOIN users reviewer
+        ON rf.reviewer_id = reviewer.user_id
     `;
 
     const conditions = [];
@@ -90,7 +98,7 @@ export async function GET(request) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch risk flags'
+        error: `Failed to fetch risk flags: ${error.message || 'Unknown database error.'}`
       },
       { status: 500 }
     );

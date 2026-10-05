@@ -97,7 +97,11 @@ export default function ContractsPage() {
         setMessage(data.error || "Failed to upload contract.");
         return;
       }
-      setMessage(data.already_exists ? "This PDF is already stored and ready for review." : "Contract uploaded successfully.");
+      const detectedRiskCount = Number(data.analysis?.new_flags || 0);
+      setMessage(
+        `${data.already_exists ? "This PDF was already stored." : "Contract uploaded successfully."} `
+        + `Risk analysis completed with ${detectedRiskCount} detected risk flag(s).`
+      );
       setTitle("");
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";

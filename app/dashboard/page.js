@@ -60,7 +60,7 @@ export default function Dashboard() {
           </Link>
 
           {/* Risk Flags */}
-          <Link href="/contracts" className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-amber-200 hover:shadow-lg">
+          <Link href="/risk-review" className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-amber-200 hover:shadow-lg">
             <h2 className="text-xl font-semibold text-gray-900">
               Risk Flags
             </h2>

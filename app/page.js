@@ -158,10 +158,11 @@ export default function Home() {
 
       setSelectedContractId(data.contract_id);
       setMessage({
-        type: data.warning ? 'warning' : 'success',
-        text: data.warning
-          ? `Contract #${data.contract_id} was uploaded with ${data.clauses_created} clauses. ${data.warning}`
-          : `${data.already_exists ? 'This PDF is already stored as' : 'Uploaded'} ${data.title} (Contract #${data.contract_id}) with ${data.clauses_created} clauses and embeddings. Status: ${data.status}.`,
+        type: 'success',
+        text: `${data.already_exists ? 'This PDF is already stored as' : 'Uploaded'} ${data.title} `
+          + `(Contract #${data.contract_id}) with ${data.clauses_created} clauses. `
+          + `Risk analysis completed with ${Number(data.analysis?.new_flags || 0)} detected risk flag(s). `
+          + `Status: ${data.status}.`,
       });
 
       setSelectedFile(null);

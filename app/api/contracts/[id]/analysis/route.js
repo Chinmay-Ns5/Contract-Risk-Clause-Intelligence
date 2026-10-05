@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { runAnalysis } from '@/vector-db/analyze_risk';
+import { embedRiskPatterns } from '@/vector-db/embed_patterns';
 import { getDb } from '@/app/lib/db';
 
 export async function POST(request, { params }) {
@@ -16,11 +17,9 @@ export async function POST(request, { params }) {
 
     console.log(`Starting analysis for contract ${contractId}...`);
 
-    // Run the actual AI/risk analysis
-    const result = await runAnalysis(contractId);
-
-    // Update contract status after successful analysis
     const db = getDb();
+    const patternsEmbedded = await embedRiskPatterns(db);
+    const result = await runAnalysis(contractId);
 
     await db.execute(
       `UPDATE contracts
@@ -35,6 +34,7 @@ export async function POST(request, { params }) {
       success: true,
       contract_id: contractId,
       status: 'analyzed',
+      patterns_embedded: patternsEmbedded,
       result
     });
 
