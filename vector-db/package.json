@@ -1,0 +1,21 @@
+{
+  "type": "module",
+  "name": "vector-db",
+  "version": "1.0.0",
+  "description": "",
+  "main": "embed.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@qdrant/js-client-rest": "^1.19.0",
+    "@huggingface/transformers": "^4.3.0",
+    "mysql2": "^3.24.3"
+  },
+  "overrides": {
+    "undici": "^7.30.0"
+  }
+}
