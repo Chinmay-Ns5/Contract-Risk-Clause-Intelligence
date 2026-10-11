@@ -16,6 +16,7 @@ export default function Home() {
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploading, setUploading] = useState(false);
   const uploadLock = useRef(false);
+  const isAdmin = String(sessionUser?.role_name || '').trim().toLowerCase() === 'admin';
 
   useEffect(() => {
     fetchContracts();
@@ -127,8 +128,7 @@ export default function Home() {
       return;
     }
 
-    const uploaderId = Number(sessionUser?.user_id);
-    if (!Number.isInteger(uploaderId) || String(sessionUser?.role_name || '').toLowerCase() !== 'admin') {
+    if (!Number.isInteger(Number(sessionUser?.user_id)) || !isAdmin) {
       setMessage({ type: 'error', text: 'An authenticated Admin account is required to upload contracts.' });
       return;
     }
@@ -143,8 +143,6 @@ export default function Home() {
       const formData = new FormData();
       formData.set('file', selectedFile);
       formData.set('title', uploadTitle.trim());
-      formData.set('uploaded_by', String(uploaderId));
-      formData.set('role_name', sessionUser.role_name);
 
       const response = await fetch('/api/contracts', {
         method: 'POST',
@@ -277,8 +275,8 @@ export default function Home() {
               </h1>
 
               <p className="mt-2 text-sm text-gray-500 max-w-2xl">
-                Select a contract and run similarity-based AI analysis
-                to identify potentially risky clauses.
+                Browse contracts and review analysis results. Admins can run
+                similarity-based analysis to identify potentially risky clauses.
               </p>
             </div>
 
@@ -328,7 +326,7 @@ export default function Home() {
             </p>
 
             <p className="mt-1 text-xs text-gray-400">
-              Available for analysis
+              Contracts available
             </p>
           </div>
 
@@ -368,7 +366,7 @@ export default function Home() {
 
         </section>
 
-        {!sessionLoading && String(sessionUser?.role_name || '').toLowerCase() === 'admin' && (
+        {!sessionLoading && isAdmin && (
         <section className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-5">
             <h2 className="text-lg font-semibold text-gray-950">Upload a contract</h2>
@@ -629,7 +627,7 @@ export default function Home() {
                               </a>
                             )}
 
-                            <button
+                            {isAdmin && <button
                               onClick={() =>
                                 analyzeContract(
                                   contract.contract_id
@@ -688,7 +686,7 @@ export default function Home() {
                                 </>
                               )}
 
-                            </button>
+                            </button>}
 
                           </div>
 

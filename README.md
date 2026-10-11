@@ -244,12 +244,13 @@ The application supports three user roles.
 
 | Capability | Admin | Reviewer | Viewer |
 |---|:---:|:---:|:---:|
-| Access the application | ✓ | ✓ | ✓ |
-| View contracts | ✓ | ✓ | ✓ |
-| Add contracts | ✓ | — | — |
-| Run or access permitted analysis workflows | ✓ | As permitted | As permitted |
+| View dashboard, contracts, analysis, risks, obligations, and deadlines | ✓ | ✓ | ✓ |
+| Upload or create contracts | ✓ | — | — |
+| Run or rerun contract analysis | ✓ | — | — |
+| View risk details and review status | ✓ | ✓ | ✓ |
 | Mark risk flags as reviewed | ✓ | ✓ | — |
-| Access protected operations according to role | ✓ | ✓ | ✓ |
+| Create obligations or deadlines where supported | ✓ | — | — |
+| Manage users and roles | ✓ | — | — |
 
 Authorization is enforced by the application rather than relying solely on whether a button is visible in the interface.
 
@@ -493,12 +494,12 @@ The application exposes API routes through the Next.js App Router.
 | `/api/auth/logout` | POST | Log out a user |
 | `/api/auth/session` | GET | Retrieve session information |
 | `/api/contracts` | GET, POST | List and create contracts |
-| `/api/contracts/[id]` | GET, PATCH, DELETE | Access or manage an individual contract |
-| `/api/contracts/[id]/analysis` | POST | Run contract risk analysis |
+| `/api/contracts/[id]` | GET | Read an individual contract and its clauses |
+| `/api/contracts/[id]/analysis` | POST | Run contract risk analysis (Admin only) |
 | `/api/risk-flags` | GET | Retrieve risk flags |
-| `/api/risk-flags/[id]` | PATCH | Update an individual risk flag |
+| `/api/risk-flags/[id]` | PATCH | Mark a risk flag as reviewed (Admin or Reviewer) |
 | `/api/obligations` | GET, POST | Retrieve and create obligations |
-| `/api/deadlines` | GET | Retrieve deadline information |
+| `/api/deadlines` | GET, POST | Retrieve and create deadlines |
 | `/api/users` | GET | Retrieve user information, subject to authorization |
 
 The precise methods accepted by individual routes depend on their implementation. The table summarizes the primary operations.

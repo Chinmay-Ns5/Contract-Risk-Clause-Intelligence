@@ -1,7 +1,16 @@
+import { getSessionUser, hasRole } from '@/app/lib/auth';
 import { getDb } from '@/app/lib/db';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request) {
+  const user = await getSessionUser(request);
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+  }
+  if (!hasRole(user, ['admin'])) {
+    return NextResponse.json({ error: 'Admin role required to access user management.' }, { status: 403 });
+  }
+
   try {
     const db = getDb();
     const [rows] = await db.execute(

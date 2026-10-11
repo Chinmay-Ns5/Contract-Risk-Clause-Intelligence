@@ -12,6 +12,25 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ success: false, error: 'Admin or Reviewer role required.' }, { status: 403 });
     }
 
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, error: 'A review-status update is required.' }, { status: 400 });
+    }
+    if (
+      !body
+      || typeof body !== 'object'
+      || Array.isArray(body)
+      || Object.keys(body).length !== 1
+      || body.reviewed !== true
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Only setting reviewed to true is permitted.' },
+        { status: 400 }
+      );
+    }
+
     const { id } = await params;
     const flagId = Number(id);
     if (!Number.isInteger(flagId) || flagId <= 0) {

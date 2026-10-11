@@ -52,7 +52,7 @@ export default function Dashboard() {
               Contracts
             </h2>
             <p className="mt-2 text-gray-600">
-              Manage uploaded contracts.
+              Browse contracts and review their clauses and analysis.
             </p>
             <p className="mt-4 text-sm font-semibold text-blue-700 group-hover:text-blue-800">
               Open Contracts →

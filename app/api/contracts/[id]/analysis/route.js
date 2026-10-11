@@ -1,9 +1,18 @@
+import { getSessionUser, hasRole } from '@/app/lib/auth';
 import { NextResponse } from 'next/server';
 import { runAnalysis } from '@/vector-db/analyze_risk';
 import { embedRiskPatterns } from '@/vector-db/embed_patterns';
 import { getDb } from '@/app/lib/db';
 
 export async function POST(request, { params }) {
+  const user = await getSessionUser(request);
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+  }
+  if (!hasRole(user, ['admin'])) {
+    return NextResponse.json({ error: 'Admin role required to run contract analysis.' }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const contractId = Number(id);

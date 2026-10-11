@@ -13,6 +13,9 @@ export default function ContractDetails() {
   const [error, setError] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisMessage, setAnalysisMessage] = useState("");
+  const [user, setUser] = useState(null);
+
+  const isAdmin = String(user?.role_name || '').trim().toLowerCase() === 'admin';
 
   async function analyzeContract() {
     setAnalyzing(true);
@@ -34,6 +37,16 @@ export default function ContractDetails() {
   }
 
   useEffect(() => {
+    fetch('/api/auth/session')
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Unable to load the current session.');
+        const data = await response.json();
+        setUser(data.user);
+      })
+      .catch((sessionError) => {
+        console.error('Unable to load current session:', sessionError);
+      });
+
     async function loadContract() {
       try {
         const response = await fetch(`/api/contracts/${contractId}`);
@@ -87,14 +100,14 @@ export default function ContractDetails() {
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <button
+          {isAdmin && <button
             type="button"
             onClick={analyzeContract}
             disabled={analyzing}
             className="rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
             {analyzing ? 'Analyzing...' : 'Run risk analysis'}
-          </button>
+          </button>}
           <Link
             href={`/risk-review?contractId=${contractId}`}
             className="rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"

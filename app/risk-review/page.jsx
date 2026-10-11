@@ -79,6 +79,9 @@ function RiskReviewContent() {
   const [selectedFlag, setSelectedFlag] = useState(null);
   const [user, setUser] = useState(null);
   const [sessionError, setSessionError] = useState('');
+  const canMarkReviewed = ['admin', 'reviewer'].includes(
+    String(user?.role_name || '').trim().toLowerCase()
+  );
 
   useEffect(() => {
     async function loadSession() {
@@ -207,7 +210,7 @@ function RiskReviewContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          reviewer_id: user.user_id,
+          reviewed: true,
         }),
       });
 
@@ -983,7 +986,7 @@ function RiskReviewContent() {
                               <span className="text-xs font-medium text-emerald-700">
                                 Reviewed
                               </span>
-                            ) : ['admin', 'reviewer'].includes(String(user?.role_name || '').toLowerCase()) ? (
+                            ) : canMarkReviewed ? (
                               <button
                                 type="button"
                                 onClick={() => markReviewed(flag.flag_id)}

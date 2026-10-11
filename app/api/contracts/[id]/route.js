@@ -1,7 +1,12 @@
+import { getSessionUser } from '@/app/lib/auth';
 import { getDb } from '@/app/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function GET(request, { params }) {
+  if (!await getSessionUser(request)) {
+    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+  }
+
   const db = getDb();
   const { id } = await params;
 

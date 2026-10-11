@@ -1,7 +1,12 @@
+import { getSessionUser } from '@/app/lib/auth';
 import { getDb } from '@/app/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function GET(request) {
+  if (!await getSessionUser(request)) {
+    return NextResponse.json({ success: false, error: 'Authentication required.' }, { status: 401 });
+  }
+
   try {
     const db = getDb();
     const { searchParams } = new URL(request.url);

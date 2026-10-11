@@ -14,7 +14,11 @@ import { NextResponse } from 'next/server';
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 const activeUploads = new Set();
 
-export async function GET() {
+export async function GET(request) {
+  if (!await getSessionUser(request)) {
+    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+  }
+
   const db = getDb();
   const [rows] = await db.execute('SELECT * FROM contracts ORDER BY upload_date DESC');
   return NextResponse.json(rows);

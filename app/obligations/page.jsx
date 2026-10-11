@@ -6,6 +6,8 @@ import Link from "next/link";
 export default function ObligationsPage() {
   const [obligations, setObligations] = useState([]);
   const [contracts, setContracts] = useState([]);
+  const [user, setUser] = useState(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
 
   const [contractId, setContractId] = useState("");
   const [description, setDescription] = useState("");
@@ -13,6 +15,7 @@ export default function ObligationsPage() {
 
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const isAdmin = String(user?.role_name || "").trim().toLowerCase() === "admin";
 
   async function loadData() {
     try {
@@ -21,20 +24,41 @@ export default function ObligationsPage() {
         fetch("/api/contracts"),
       ]);
 
+      if (!obligationsRes.ok || !contractsRes.ok) {
+        throw new Error("Unable to load obligations and contracts.");
+      }
+
       const obligationsData = await obligationsRes.json();
       const contractsData = await contractsRes.json();
+      if (!Array.isArray(obligationsData) || !Array.isArray(contractsData)) {
+        throw new Error("The obligations API returned an unexpected response.");
+      }
 
       setObligations(obligationsData);
       setContracts(contractsData);
     } catch (error) {
       console.error(error);
-      setMessage("Failed to load data");
+      setMessage(error.message || "Failed to load data");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
+    async function loadSession() {
+      try {
+        const response = await fetch("/api/auth/session");
+        if (!response.ok) throw new Error("Unable to load the current session.");
+        const data = await response.json();
+        setUser(data.user);
+      } catch (error) {
+        console.error("Unable to load current session:", error);
+      } finally {
+        setSessionLoading(false);
+      }
+    }
+
+    loadSession();
     queueMicrotask(() => loadData());
   }, []);
 
@@ -94,6 +118,7 @@ export default function ObligationsPage() {
           Track contractual obligations and their due dates.
         </p>
 
+        {!sessionLoading && isAdmin && (
         <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
           <h2 className="text-xl font-semibold text-gray-900">
             Add Obligation
@@ -169,6 +194,7 @@ export default function ObligationsPage() {
             )}
           </form>
         </div>
+        )}
 
         <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
           <h2 className="text-xl font-semibold text-gray-900">

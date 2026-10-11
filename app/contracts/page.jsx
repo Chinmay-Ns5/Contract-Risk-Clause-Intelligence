@@ -114,7 +114,7 @@ export default function ContractsPage() {
     }
   }
 
-  const isAdmin = String(user?.role_name || "").toLowerCase() === "admin";
+  const isAdmin = String(user?.role_name || "").trim().toLowerCase() === "admin";
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-6 sm:px-8 sm:py-10">
@@ -123,7 +123,7 @@ export default function ContractsPage() {
         <header className="mb-8 mt-5">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">Contract intelligence</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">Contract Management</h1>
-          <p className="mt-2 max-w-2xl text-gray-600">Upload, review, and manage contracts in the Contract Risk Platform.</p>
+          <p className="mt-2 max-w-2xl text-gray-600">Browse contracts and review their clauses and analysis. Admins can upload new documents.</p>
         </header>
 
         {!sessionLoading && isAdmin && (
