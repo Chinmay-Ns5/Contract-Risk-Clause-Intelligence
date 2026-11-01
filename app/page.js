@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [analyzingId, setAnalyzingId] = useState(null);
@@ -19,33 +21,54 @@ export default function Home() {
   const isAdmin = String(sessionUser?.role_name || '').trim().toLowerCase() === 'admin';
 
   useEffect(() => {
-    fetchContracts();
-    fetchSession();
-  }, []);
+    async function fetchSession() {
+      try {
+        const response = await fetch('/api/auth/session');
+        if (response.status === 401) {
+          localStorage.removeItem('user');
+          router.replace('/login');
+          return;
+        }
 
-  async function fetchSession() {
-    try {
-      const response = await fetch('/api/auth/session');
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Authentication required.');
-      setSessionUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
-    } catch {
-      setSessionUser(null);
-      localStorage.removeItem('user');
-    } finally {
-      setSessionLoading(false);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to verify your session.');
+        }
+        if (!data.user) {
+          throw new Error('The session API did not return a user.');
+        }
+
+        setSessionUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      } catch (error) {
+        console.error('Error verifying session:', error);
+        setMessage({
+          type: 'error',
+          text: error.message || 'Unable to verify your session.',
+        });
+      } finally {
+        setSessionLoading(false);
+      }
     }
-  }
 
-  async function fetchContracts() {
+    fetchSession();
+  }, [router]);
+
+  const fetchContracts = useCallback(async () => {
     try {
       setLoading(true);
 
       const response = await fetch('/api/contracts');
+      if (response.status === 401) {
+        setSessionUser(null);
+        localStorage.removeItem('user');
+        router.replace('/login');
+        return;
+      }
 
       if (!response.ok) {
-        throw new Error('Failed to fetch contracts');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to fetch contracts.');
       }
 
       const data = await response.json();
@@ -65,7 +88,13 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
+
+  useEffect(() => {
+    if (sessionUser) {
+      queueMicrotask(() => fetchContracts());
+    }
+  }, [fetchContracts, sessionUser]);
 
   async function analyzeContract(contractId) {
     if (analysisLock.current) return;

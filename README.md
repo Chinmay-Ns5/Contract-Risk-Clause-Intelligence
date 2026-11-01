@@ -343,33 +343,22 @@ Copy-Item .env.example .env.local
 
 Open `.env.local` and update the values for your local environment. See [Environment Configuration](#-environment-configuration).
 
-The root Docker Compose file also requires a `.env` file for its database-service settings. Create it in the repository root with the values described in the next section.
-
-Do not commit `.env` or `.env.local`.
+Do not commit `.env.local`.
 
 ### 3. Configure Docker Services
 
-Create a root-level `.env` file:
+Use a strong local `MYSQL_PASSWORD` in `.env.local`. For the default setup, configure `MYSQL_USER=root`; Docker Compose uses this password to initialize the MySQL root account unless `MYSQL_ROOT_PASSWORD` is explicitly supplied.
 
-```dotenv
-MYSQL_ROOT_PASSWORD=choose_a_local_root_password
-MYSQL_DATABASE=contract_risk_db
-MYSQL_PORT=3306
-QDRANT_PORT=6333
-```
+Start MySQL and Qdrant using the same environment file as the application:
 
-Use a strong local password and keep this file private.
-
-Start MySQL and Qdrant:
-
-```bash
-docker compose up -d
+```powershell
+docker compose --env-file .env.local up -d
 ```
 
 Check that the containers are running:
 
-```bash
-docker compose ps
+```powershell
+docker compose --env-file .env.local ps
 ```
 
 The default service ports are:
@@ -439,6 +428,8 @@ QDRANT_URL=http://localhost:6333
 QDRANT_COLLECTION=risk_clauses
 ```
 
+For the local Docker setup, set `MYSQL_USER=root` and use a strong `MYSQL_PASSWORD`. The Compose file uses that password as the MySQL root password unless `MYSQL_ROOT_PASSWORD` is explicitly supplied.
+
 ### Generate an Authentication Secret
 
 Run the following command:
@@ -458,8 +449,9 @@ Copy the generated value into `AUTH_SECRET`.
 - `AUTH_SECRET` is used for session-signing configuration.
 - `QDRANT_URL` specifies the Qdrant endpoint.
 - `QDRANT_COLLECTION` specifies the vector collection used by the application.
+- `MYSQL_ROOT_PASSWORD` can optionally override the Docker MySQL root password; otherwise, Compose uses `MYSQL_PASSWORD`.
 
-For the Docker setup above, make sure `MYSQL_PASSWORD` matches the root password configured in the Docker environment when using `MYSQL_USER=root`.
+For the Docker setup above, `MYSQL_PASSWORD` must match the root password when using `MYSQL_USER=root`.
 
 **Security:** Never commit real passwords, authentication secrets, API keys, or other credentials to GitHub. Do not use demonstration credentials outside the local demo environment.
 

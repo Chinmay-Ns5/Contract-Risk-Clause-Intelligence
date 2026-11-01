@@ -4,10 +4,10 @@ services:
     container_name: contract-risk-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env.local or MYSQL_ROOT_PASSWORD in the Compose environment}}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-contract_risk_db}
     ports:
-      - "${MYSQL_PORT}:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 
@@ -16,7 +16,7 @@ services:
     container_name: contract-risk-qdrant
     restart: unless-stopped
     ports:
-      - "${QDRANT_PORT}:6333"
+      - "${QDRANT_PORT:-6333}:6333"
       - "6334:6334"
     volumes:
       - qdrant_data:/qdrant/storage
