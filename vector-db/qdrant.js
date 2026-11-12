@@ -56,4 +56,15 @@ export async function searchSimilarPatterns(vector, limit = 4) {
   return response.points;
 }
 
+export async function deletePointById(id) {
+  try {
+    await qdrant.delete(COLLECTION, { wait: true, points: [id] });
+    console.log(`Deleted Qdrant point ${id} from "${COLLECTION}".`);
+  } catch (error) {
+    const message = error?.data?.status?.error || error?.message || 'Unknown error';
+    console.error(`Failed to delete Qdrant point ${id}: ${message}`);
+    throw new Error(`Unable to delete Qdrant point ${id}: ${message}`);
+  }
+}
+
 export default qdrant;
