@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="2038" viewBox="0 0 1260 2038" font-family="Arial, Helvetica, sans-serif">
+<defs>
+<marker id="ah0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/></marker>
+<marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2471a3"/></marker>
+<marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1e8449"/></marker>
+<marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#af601a"/></marker>
+<marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d3c98"/></marker>
+<marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#117a8b"/></marker>
+<marker id="ah6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b7950b"/></marker>
+<marker id="ah7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e84393"/></marker>
+<marker id="ah8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2e4053"/></marker>
+<marker id="ah9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#d35400"/></marker>
+<marker id="ah10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6c3483"/></marker>
+<marker id="ah11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7f8c8d"/></marker>
+</defs>
+<rect width="1260" height="2038" fill="#ffffff"/>
+<text x="60" y="44" font-size="28" font-weight="bold" fill="#d9731a">Relational Schema – Contract Risk &amp; Clause Intelligence</text>
+<rect x="60" y="56" width="1140" height="3" rx="1.5" fill="#d9731a"/>
+<path d="M 431.5,291.0 L 431.5,305.0 L 872.0,305.0 L 872.0,170.0 L 95.5,170.0 L 95.5,157.0" fill="none" stroke="#c0392b" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah0)"/>
+<circle cx="431.5" cy="291" r="2.6" fill="#c0392b"/>
+<path d="M 265.5,452.0 L 265.5,466.0 L 889.0,466.0 L 889.0,331.0 L 91.0,331.0 L 91.0,292.0" fill="none" stroke="#2471a3" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah1)"/>
+<circle cx="265.5" cy="452" r="2.6" fill="#2471a3"/>
+<path d="M 110.0,774.0 L 110.0,801.0 L 957.0,801.0 L 957.0,518.0 L 89.0,518.0 L 89.0,453.0" fill="none" stroke="#1e8449" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah2)"/>
+<circle cx="110.0" cy="774" r="2.6" fill="#1e8449"/>
+<path d="M 200.0,774.0 L 200.0,788.0 L 906.0,788.0 L 906.0,653.0 L 100.0,653.0 L 100.0,640.0" fill="none" stroke="#af601a" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah3)"/>
+<circle cx="200.0" cy="774" r="2.6" fill="#af601a"/>
+<path d="M 200.0,922.0 L 200.0,936.0 L 991.0,936.0 L 991.0,505.0 L 103.0,505.0 L 103.0,453.0" fill="none" stroke="#7d3c98" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah4)"/>
+<circle cx="200.0" cy="922" r="2.6" fill="#7d3c98"/>
+<path d="M 218.0,1070.0 L 218.0,1084.0 L 1008.0,1084.0 L 1008.0,492.0 L 117.0,492.0 L 117.0,453.0" fill="none" stroke="#117a8b" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah5)"/>
+<circle cx="218.0" cy="1070" r="2.6" fill="#117a8b"/>
+<path d="M 211.0,1205.0 L 211.0,1219.0 L 1025.0,1219.0 L 1025.0,479.0 L 131.0,479.0 L 131.0,453.0" fill="none" stroke="#b7950b" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah6)"/>
+<circle cx="211.0" cy="1205" r="2.6" fill="#b7950b"/>
+<path d="M 204.0,1488.0 L 204.0,1502.0 L 923.0,1502.0 L 923.0,1367.0 L 105.0,1367.0 L 105.0,1341.0" fill="none" stroke="#e84393" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah7)"/>
+<circle cx="204.0" cy="1488" r="2.6" fill="#e84393"/>
+<path d="M 175.0,1636.0 L 175.0,1689.0 L 1042.0,1689.0 L 1042.0,949.0 L 105.0,949.0 L 105.0,923.0" fill="none" stroke="#2e4053" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah8)"/>
+<circle cx="175.0" cy="1636" r="2.6" fill="#2e4053"/>
+<path d="M 266.0,1636.0 L 266.0,1676.0 L 940.0,1676.0 L 940.0,1515.0 L 106.0,1515.0 L 106.0,1489.0" fill="none" stroke="#d35400" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah9)"/>
+<circle cx="266.0" cy="1636" r="2.6" fill="#d35400"/>
+<path d="M 495.0,1636.0 L 495.0,1663.0 L 974.0,1663.0 L 974.0,1354.0 L 119.0,1354.0 L 119.0,1341.0" fill="none" stroke="#6c3483" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah10)"/>
+<circle cx="495.0" cy="1636" r="2.6" fill="#6c3483"/>
+<path d="M 685.5,1636.0 L 685.5,1650.0 L 1059.0,1650.0 L 1059.0,318.0 L 105.0,318.0 L 105.0,292.0" fill="none" stroke="#7f8c8d" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah11)"/>
+<circle cx="685.5" cy="1636" r="2.6" fill="#7f8c8d"/>
+<text x="60" y="108" font-size="16" font-weight="bold" fill="#111">ROLES</text>
+<rect x="60" y="120" width="71" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="95.5" y="143.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">role_id</text>
+<rect x="131" y="120" width="97" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="179.5" y="143.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">role_name</text>
+<text x="60" y="243" font-size="16" font-weight="bold" fill="#111">USERS</text>
+<rect x="60" y="255" width="76" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="98.0" y="278.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">user_id</text>
+<rect x="136" y="255" width="65" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="168.5" y="278.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">name</text>
+<rect x="201" y="255" width="63" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="232.5" y="278.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">email</text>
+<rect x="264" y="255" width="132" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="330.0" y="278.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">password_hash</text>
+<rect x="396" y="255" width="71" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="431.5" y="278.0" font-size="15" text-anchor="middle" fill="#c0392b" font-weight="bold">role_id</text>
+<rect x="467" y="255" width="97" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="515.5" y="278.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">created_at</text>
+<text x="60" y="404" font-size="16" font-weight="bold" fill="#111">CONTRACTS</text>
+<rect x="60" y="416" width="100" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="110.0" y="439.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">contract_id</text>
+<rect x="160" y="416" width="50" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="185.0" y="439.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">title</text>
+<rect x="210" y="416" width="111" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="265.5" y="439.0" font-size="15" text-anchor="middle" fill="#2471a3" font-weight="bold">uploaded_by</text>
+<rect x="321" y="416" width="107" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="374.5" y="439.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">upload_date</text>
+<rect x="428" y="416" width="82" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="469.0" y="439.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">file_path</text>
+<rect x="510" y="416" width="68" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="544.0" y="439.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">status</text>
+<rect x="578" y="416" width="104" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="630.0" y="439.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">expiry_date</text>
+<text x="60" y="591" font-size="16" font-weight="bold" fill="#111">PARTIES</text>
+<rect x="60" y="603" width="80" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="100.0" y="626.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">party_id</text>
+<rect x="140" y="603" width="106" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="193.0" y="626.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">party_name</text>
+<rect x="246" y="603" width="97" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="294.5" y="626.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">party_type</text>
+<text x="60" y="726" font-size="16" font-weight="bold" fill="#111">CONTRACT_PARTIES</text>
+<rect x="60" y="738" width="100" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="110.0" y="761.0" font-size="15" text-anchor="middle" fill="#1e8449" font-weight="bold" text-decoration="underline">contract_id</text>
+<rect x="160" y="738" width="80" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="200.0" y="761.0" font-size="15" text-anchor="middle" fill="#af601a" font-weight="bold" text-decoration="underline">party_id</text>
+<rect x="240" y="738" width="132" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="306.0" y="761.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">role_in_contract</text>
+<text x="60" y="874" font-size="16" font-weight="bold" fill="#111">CLAUSES</text>
+<rect x="60" y="886" width="90" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="105.0" y="909.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">clause_id</text>
+<rect x="150" y="886" width="100" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="200.0" y="909.0" font-size="15" text-anchor="middle" fill="#7d3c98" font-weight="bold">contract_id</text>
+<rect x="250" y="886" width="103" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="301.5" y="909.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">clause_text</text>
+<rect x="353" y="886" width="113" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="409.5" y="909.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">clause_order</text>
+<rect x="466" y="886" width="88" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="510.0" y="909.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">vector_id</text>
+<text x="60" y="1022" font-size="16" font-weight="bold" fill="#111">OBLIGATIONS</text>
+<rect x="60" y="1034" width="108" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="114.0" y="1057.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">obligation_id</text>
+<rect x="168" y="1034" width="100" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="218.0" y="1057.0" font-size="15" text-anchor="middle" fill="#117a8b" font-weight="bold">contract_id</text>
+<rect x="268" y="1034" width="99" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="317.5" y="1057.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">description</text>
+<rect x="367" y="1034" width="88" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="411.0" y="1057.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">due_date</text>
+<rect x="455" y="1034" width="68" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="489.0" y="1057.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">status</text>
+<text x="60" y="1157" font-size="16" font-weight="bold" fill="#111">DEADLINES</text>
+<rect x="60" y="1169" width="101" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="110.5" y="1192.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">deadline_id</text>
+<rect x="161" y="1169" width="100" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="211.0" y="1192.0" font-size="15" text-anchor="middle" fill="#b7950b" font-weight="bold">contract_id</text>
+<rect x="261" y="1169" width="118" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="320.0" y="1192.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">deadline_type</text>
+<rect x="379" y="1169" width="118" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="438.0" y="1192.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">deadline_date</text>
+<rect x="497" y="1169" width="74" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="534.0" y="1192.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">notified</text>
+<text x="60" y="1292" font-size="16" font-weight="bold" fill="#111">RISK_CATEGORIES</text>
+<rect x="60" y="1304" width="104" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="112.0" y="1327.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">category_id</text>
+<rect x="164" y="1304" width="130" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="229.0" y="1327.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">category_name</text>
+<text x="60" y="1440" font-size="16" font-weight="bold" fill="#111">RISK_PATTERNS</text>
+<rect x="60" y="1452" width="92" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="106.0" y="1475.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">pattern_id</text>
+<rect x="152" y="1452" width="104" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="204.0" y="1475.0" font-size="15" text-anchor="middle" fill="#e84393" font-weight="bold">category_id</text>
+<rect x="256" y="1452" width="105" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="308.5" y="1475.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">pattern_text</text>
+<rect x="361" y="1452" width="88" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="405.0" y="1475.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">vector_id</text>
+<text x="60" y="1588" font-size="16" font-weight="bold" fill="#111">RISK_FLAGS</text>
+<rect x="60" y="1600" width="70" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="95.0" y="1623.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal" text-decoration="underline">flag_id</text>
+<rect x="130" y="1600" width="90" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="175.0" y="1623.0" font-size="15" text-anchor="middle" fill="#2e4053" font-weight="bold">clause_id</text>
+<rect x="220" y="1600" width="92" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="266.0" y="1623.0" font-size="15" text-anchor="middle" fill="#d35400" font-weight="bold">pattern_id</text>
+<rect x="312" y="1600" width="131" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="377.5" y="1623.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">similarity_score</text>
+<rect x="443" y="1600" width="104" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="495.0" y="1623.0" font-size="15" text-anchor="middle" fill="#6c3483" font-weight="bold">category_id</text>
+<rect x="547" y="1600" width="87" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="590.5" y="1623.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">reviewed</text>
+<rect x="634" y="1600" width="103" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="685.5" y="1623.0" font-size="15" text-anchor="middle" fill="#7f8c8d" font-weight="bold">reviewer_id</text>
+<rect x="737" y="1600" width="95" height="36" fill="#f4f4f4" stroke="#222" stroke-width="1.2"/>
+<text x="784.5" y="1623.0" font-size="15" text-anchor="middle" fill="#111" font-weight="normal">flagged_at</text>
+<text x="60" y="1744" font-size="17" font-weight="bold" fill="#111">Legend – Foreign Key Constraints (arrow: FK attribute → referenced PK)</text>
+<line x1="60" y1="1769" x2="94" y2="1769" stroke="#c0392b" stroke-width="2" marker-end="url(#ah0)"/>
+<text x="106" y="1774" font-size="14" fill="#111">users.role_id → roles.role_id<tspan fill="#666">  [nullable]</tspan></text>
+<line x1="60" y1="1793" x2="94" y2="1793" stroke="#2471a3" stroke-width="2" marker-end="url(#ah1)"/>
+<text x="106" y="1798" font-size="14" fill="#111">contracts.uploaded_by → users.user_id<tspan fill="#666">  [nullable]</tspan></text>
+<line x1="60" y1="1817" x2="94" y2="1817" stroke="#1e8449" stroke-width="2" marker-end="url(#ah2)"/>
+<text x="106" y="1822" font-size="14" fill="#111">contract_parties.contract_id → contracts.contract_id<tspan fill="#666">  [ON DELETE CASCADE]</tspan></text>
+<line x1="60" y1="1841" x2="94" y2="1841" stroke="#af601a" stroke-width="2" marker-end="url(#ah3)"/>
+<text x="106" y="1846" font-size="14" fill="#111">contract_parties.party_id → parties.party_id<tspan fill="#666">  [ON DELETE CASCADE]</tspan></text>
+<line x1="60" y1="1865" x2="94" y2="1865" stroke="#7d3c98" stroke-width="2" marker-end="url(#ah4)"/>
+<text x="106" y="1870" font-size="14" fill="#111">clauses.contract_id → contracts.contract_id<tspan fill="#666">  [ON DELETE CASCADE]</tspan></text>
+<line x1="60" y1="1889" x2="94" y2="1889" stroke="#117a8b" stroke-width="2" marker-end="url(#ah5)"/>
+<text x="106" y="1894" font-size="14" fill="#111">obligations.contract_id → contracts.contract_id<tspan fill="#666">  [ON DELETE CASCADE]</tspan></text>
+<line x1="620" y1="1769" x2="654" y2="1769" stroke="#b7950b" stroke-width="2" marker-end="url(#ah6)"/>
+<text x="666" y="1774" font-size="14" fill="#111">deadlines.contract_id → contracts.contract_id<tspan fill="#666">  [ON DELETE CASCADE]</tspan></text>
+<line x1="620" y1="1793" x2="654" y2="1793" stroke="#e84393" stroke-width="2" marker-end="url(#ah7)"/>
+<text x="666" y="1798" font-size="14" fill="#111">risk_patterns.category_id → risk_categories.category_id<tspan fill="#666">  [nullable]</tspan></text>
+<line x1="620" y1="1817" x2="654" y2="1817" stroke="#2e4053" stroke-width="2" marker-end="url(#ah8)"/>
+<text x="666" y="1822" font-size="14" fill="#111">risk_flags.clause_id → clauses.clause_id<tspan fill="#666">  [ON DELETE CASCADE]</tspan></text>
+<line x1="620" y1="1841" x2="654" y2="1841" stroke="#d35400" stroke-width="2" marker-end="url(#ah9)"/>
+<text x="666" y="1846" font-size="14" fill="#111">risk_flags.pattern_id → risk_patterns.pattern_id<tspan fill="#666"></tspan></text>
+<line x1="620" y1="1865" x2="654" y2="1865" stroke="#6c3483" stroke-width="2" marker-end="url(#ah10)"/>
+<text x="666" y="1870" font-size="14" fill="#111">risk_flags.category_id → risk_categories.category_id<tspan fill="#666">  [nullable]</tspan></text>
+<line x1="620" y1="1889" x2="654" y2="1889" stroke="#7f8c8d" stroke-width="2" marker-end="url(#ah11)"/>
+<text x="666" y="1894" font-size="14" fill="#111">risk_flags.reviewer_id → users.user_id<tspan fill="#666">  [nullable]</tspan></text>
+<text x="60" y="1932" font-size="14" fill="#111"><tspan text-decoration="underline">underlined</tspan> = Primary Key &#160;|&#160; <tspan font-weight="bold">coloured bold text</tspan> = Foreign Key (colour matches its arrow) &#160;|&#160; CONTRACT_PARTIES has composite PK (contract_id, party_id)</text>
+<text x="60" y="1954" font-size="14" fill="#111">UNIQUE: roles.role_name, users.email, risk_categories.category_name &#160;|&#160; Indexes: clauses(contract_id), risk_flags(clause_id), deadlines(deadline_date)</text>
+</svg>

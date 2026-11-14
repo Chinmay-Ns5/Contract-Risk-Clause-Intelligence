@@ -20,8 +20,21 @@ export async function GET(request) {
   }
 
   const db = getDb();
-  const [rows] = await db.execute('SELECT * FROM contracts ORDER BY upload_date DESC');
-  return NextResponse.json(rows);
+  // Stored functions (database/advanced_sql/10_stored_functions.sql).
+  try {
+    const [rows] = await db.execute(
+      `SELECT c.*,
+              fn_contract_risk_score(c.contract_id) AS risk_score,
+              fn_risk_level(fn_contract_risk_score(c.contract_id)) AS risk_level
+       FROM contracts AS c
+       ORDER BY c.upload_date DESC`
+    );
+    return NextResponse.json(rows);
+  } catch (error) {
+    console.error('Stored function query failed, using plain query:', error.message);
+    const [rows] = await db.execute('SELECT * FROM contracts ORDER BY upload_date DESC');
+    return NextResponse.json(rows);
+  }
 }
 
 export async function POST(request) {

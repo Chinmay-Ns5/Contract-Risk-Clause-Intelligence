@@ -157,6 +157,44 @@ export default function ContractDetails() {
 
           </div>
 
+          {contract.risk_summary && (
+            <div className="mt-8 rounded-lg border border-blue-200 bg-blue-50 p-5">
+              <h2 className="text-xl font-semibold text-gray-900">Risk Summary</h2>
+              <p className="text-xs text-gray-500">From stored procedure GetContractRiskSummary</p>
+              <div className="mt-3 grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-slate-800">{contract.risk_summary.clause_count}</p>
+                  <p className="text-sm text-gray-500">Clauses</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-800">{contract.risk_summary.risk_flag_count}</p>
+                  <p className="text-sm text-gray-500">Risk flags</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-red-600">{contract.risk_summary.unreviewed_flag_count}</p>
+                  <p className="text-sm text-gray-500">Unreviewed</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {contract.upcoming_items && contract.upcoming_items.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-xl font-semibold text-gray-900">Upcoming Items</h2>
+              <p className="text-xs text-gray-500">From stored procedure GetContractUpcomingItems</p>
+              <ul className="mt-3 space-y-2">
+                {contract.upcoming_items.map((item, index) => (
+                  <li key={`${item.event_type}-${index}`} className="rounded-md border border-gray-200 bg-white p-3 text-sm">
+                    <span className="font-semibold">{item.event_type}</span>: {item.event_description}
+                    {' '}<span className="text-gray-500">
+                      ({item.event_date ? new Date(item.event_date).toLocaleDateString() : '-'})
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="mt-8">
   <h2 className="text-xl font-semibold">
     Contract Information

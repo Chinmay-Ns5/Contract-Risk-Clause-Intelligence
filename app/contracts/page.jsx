@@ -162,12 +162,14 @@ export default function ContractsPage() {
           {loading ? <p className="text-gray-600">Loading contracts...</p> : contracts.length === 0 ? <p className="rounded-lg bg-slate-50 px-4 py-5 text-gray-600">No contracts have been added yet.</p> : (
             <div className="overflow-x-auto rounded-xl border border-slate-200">
               <table className="w-full min-w-[680px] border-collapse text-left">
-                <thead className="bg-slate-50"><tr className="border-b border-slate-200">{["ID", "Title", "Uploaded By", "Status", "Upload Date"].map((heading) => <th key={heading} className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-600">{heading}</th>)}</tr></thead>
+                <thead className="bg-slate-50"><tr className="border-b border-slate-200">{["ID", "Title", "Uploaded By", "Status", "Risk Score", "Risk Level", "Upload Date"].map((heading) => <th key={heading} className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-600">{heading}</th>)}</tr></thead>
                 <tbody>{contracts.map((contract) => <tr key={contract.contract_id} className="border-b border-slate-100 last:border-0 hover:bg-blue-50/40">
                   <td className="px-4 py-4 font-mono text-sm font-semibold text-slate-700">#{contract.contract_id}</td>
                   <td className="px-4 py-4 font-semibold"><Link href={`/contracts/${contract.contract_id}`} className="text-blue-700 hover:text-blue-900 hover:underline">{contract.title}</Link></td>
                   <td className="px-4 py-4 text-sm text-gray-600">{contract.uploaded_by}</td>
                   <td className="px-4 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${contract.status === "analyzed" ? "bg-emerald-100 text-emerald-800" : contract.status === "reviewed" ? "bg-blue-100 text-blue-800" : "bg-amber-100 text-amber-800"}`}>{contract.status}</span></td>
+                  <td className="px-4 py-4 text-sm font-mono text-gray-700">{contract.risk_score ?? "—"}</td>
+                  <td className="px-4 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${contract.risk_level === "HIGH" ? "bg-red-100 text-red-800" : contract.risk_level === "MEDIUM" ? "bg-amber-100 text-amber-800" : contract.risk_level === "LOW" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600"}`}>{contract.risk_level ?? "UNKNOWN"}</span></td>
                   <td className="px-4 py-4 text-sm text-gray-600">{contract.upload_date ? new Date(contract.upload_date).toLocaleString() : "—"}</td>
                 </tr>)}</tbody>
               </table>

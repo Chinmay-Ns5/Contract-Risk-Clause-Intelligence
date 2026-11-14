@@ -17,5 +17,18 @@ export async function GET(request, { params }) {
 
   const [clauses] = await db.execute('SELECT * FROM clauses WHERE contract_id = ? ORDER BY clause_order', [id]);
 
-  return NextResponse.json({ ...contract, clauses });
+  // Stored procedures (database/advanced_sql/04_stored_procedures.sql).
+  // Read-only; if the routines are not installed the page still loads without them.
+  let riskSummary = null;
+  let upcomingItems = [];
+  try {
+    const [summarySets] = await db.execute('CALL GetContractRiskSummary(?)', [Number(id)]);
+    riskSummary = summarySets[0]?.[0] ?? null;
+    const [upcomingSets] = await db.execute('CALL GetContractUpcomingItems(?)', [Number(id)]);
+    upcomingItems = upcomingSets[0] ?? [];
+  } catch (error) {
+    console.error('Stored procedure call failed:', error.message);
+  }
+
+  return NextResponse.json({ ...contract, clauses, risk_summary: riskSummary, upcoming_items: upcomingItems });
 }
