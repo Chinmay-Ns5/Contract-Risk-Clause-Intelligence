@@ -1,79 +1,32 @@
-import { getDb } from '@/app/lib/db';
-import { assertSessionConfiguration, setSessionCookie } from '@/app/lib/auth';
-import bcrypt from 'bcryptjs';
+import { createMySqlSession, LoginError, setSessionCookie } from '@/app/lib/auth';
 import { NextResponse } from 'next/server';
 
+// Authenticates against real MySQL accounts (managed in MySQL Workbench →
+// Administration → Users and Privileges). The users table is not used for passwords.
 export async function POST(request) {
   try {
-    assertSessionConfiguration();
-    const db = getDb();
-    const { email, password } = await request.json();
-    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const { username, password } = await request.json();
+    const normalizedUsername = String(username || '').trim();
 
-    // Validate input
-    if (!normalizedEmail || typeof password !== 'string' || !password) {
+    if (!/^[A-Za-z0-9_.-]{1,32}$/.test(normalizedUsername) || typeof password !== 'string' || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'MySQL username and password are required' },
         { status: 400 }
       );
     }
 
-    // Find user
-    const [rows] = await db.execute(
-      `SELECT
-        u.user_id,
-        u.name,
-        u.email,
-        u.password_hash,
-        r.role_id,
-        r.role_name
-       FROM users u
-      JOIN roles r ON u.role_id = r.role_id
-       WHERE u.email = ?`,
-          [normalizedEmail]
-    );
-
-    if (rows.length === 0) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
-    }
-
-    const user = rows[0];
-
-    // Check password
-    const passwordMatch = await bcrypt.compare(
-      password,
-      user.password_hash
-    );
-
-    if (!passwordMatch) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
-    }
-
-    // Return user information
-    const response = NextResponse.json({
-      success: true,
-      user: {
-        user_id: user.user_id,
-        name: user.name,
-        email: user.email,
-        role_id: user.role_id,
-        role_name: user.role_name
-      }
-    });
-    return setSessionCookie(response, user.user_id);
-
+    const { token, user } = await createMySqlSession(normalizedUsername, password);
+    const response = NextResponse.json({ success: true, user });
+    return setSessionCookie(response, token);
   } catch (error) {
-    console.error('Login error:', error);
+    if (error instanceof LoginError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
 
+    console.error('Login error:', error.code || error.message);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: 'Unable to reach the MySQL server.' },
+      { status: 503 }
     );
   }
 }

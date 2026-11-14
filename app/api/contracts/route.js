@@ -6,20 +6,20 @@ import { getSessionUser, hasRole } from '@/app/lib/auth';
 import { getDb } from '@/app/lib/db';
 import { extractClausesFromPdf } from '@/app/lib/contract-upload';
 import { runAnalysis } from '@/vector-db/analyze_risk';
-import { generateEmbedding } from '@/vector-db/embedding';
+import { indexClauseEmbeddings } from '@/vector-db/clause_vectors';
 import { embedRiskPatterns } from '@/vector-db/embed_patterns';
-import qdrant, { COLLECTION, ensureCollection } from '@/vector-db/qdrant';
 import { NextResponse } from 'next/server';
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 const activeUploads = new Set();
 
 export async function GET(request) {
-  if (!await getSessionUser(request)) {
+  const user = await getSessionUser(request);
+  if (!user) {
     return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
   }
 
-  const db = getDb();
+  const db = getDb(user);
   // Stored functions (database/advanced_sql/10_stored_functions.sql).
   try {
     const [rows] = await db.execute(
@@ -50,7 +50,7 @@ export async function POST(request) {
     return uploadPdfContract(request, user);
   }
 
-  const db = getDb();
+  const db = getDb(user);
   const body = await request.json();
   const { title, file_path } = body;
 
@@ -151,7 +151,7 @@ async function uploadPdfContract(request, user) {
       if (error.code !== 'EEXIST') throw error;
     }
 
-    const db = getDb();
+    const db = getDb(user);
     const [[existingContract]] = await db.execute(
       `SELECT contract_id, title, status
        FROM contracts
@@ -163,12 +163,12 @@ async function uploadPdfContract(request, user) {
     if (existingContract) {
       contractSaved = true;
       const [existingClauses] = await db.execute(
-        'SELECT clause_id, clause_text FROM clauses WHERE contract_id = ? ORDER BY clause_order',
+        'SELECT clause_id, contract_id, clause_text, vector_id FROM clauses WHERE contract_id = ? ORDER BY clause_order',
         [existingContract.contract_id]
       );
       await indexClauseEmbeddings(existingClauses, db);
       const patternsEmbedded = await embedRiskPatterns(db);
-      const analysis = await runAnalysis(existingContract.contract_id);
+      const analysis = await runAnalysis(existingContract.contract_id, db);
       await db.execute(
         `UPDATE contracts SET status = 'analyzed' WHERE contract_id = ?`,
         [existingContract.contract_id]
@@ -221,12 +221,12 @@ async function uploadPdfContract(request, user) {
       [contractId]
     );
     const [savedClauses] = await db.execute(
-      'SELECT clause_id, clause_text FROM clauses WHERE contract_id = ? ORDER BY clause_order',
+      'SELECT clause_id, contract_id, clause_text, vector_id FROM clauses WHERE contract_id = ? ORDER BY clause_order',
       [contractId]
     );
     await indexClauseEmbeddings(savedClauses, db);
     const patternsEmbedded = await embedRiskPatterns(db);
-    const analysis = await runAnalysis(contractId);
+    const analysis = await runAnalysis(contractId, db);
     await db.execute(
       `UPDATE contracts SET status = 'analyzed' WHERE contract_id = ?`,
       [contractId]
@@ -264,30 +264,5 @@ async function uploadPdfContract(request, user) {
     }, { status: 500 });
   } finally {
     activeUploads.delete(filePath);
-  }
-}
-
-async function indexClauseEmbeddings(clauses, db) {
-  await ensureCollection();
-  const points = [];
-
-  for (const clause of clauses) {
-    const vector = await generateEmbedding(clause.clause_text);
-    points.push({
-      id: clause.clause_id,
-      vector,
-      payload: { mysql_id: clause.clause_id, type: 'clause' },
-    });
-  }
-
-  if (points.length > 0) {
-    await qdrant.upsert(COLLECTION, { points, wait: true });
-
-    for (const point of points) {
-      await db.execute(
-        'UPDATE clauses SET vector_id = ? WHERE clause_id = ?',
-        [String(point.id), point.id]
-      );
-    }
   }
 }

@@ -12,7 +12,7 @@ export async function GET(request) {
   }
 
   try {
-    const db = getDb();
+    const db = getDb(user);
     const [rows] = await db.execute(
       'SELECT user_id, name FROM users ORDER BY name ASC, user_id ASC'
     );

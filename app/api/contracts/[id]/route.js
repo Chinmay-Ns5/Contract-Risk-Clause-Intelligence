@@ -3,11 +3,12 @@ import { getDb } from '@/app/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function GET(request, { params }) {
-  if (!await getSessionUser(request)) {
+  const user = await getSessionUser(request);
+  if (!user) {
     return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
   }
 
-  const db = getDb();
+  const db = getDb(user);
   const { id } = await params;
 
   const [[contract]] = await db.execute('SELECT * FROM contracts WHERE contract_id = ?', [id]);

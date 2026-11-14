@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { pipeline } from '@huggingface/transformers';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import mysql from 'mysql2/promise';
+import { clausePointId } from './qdrant.js';
 
 const qdrant = new QdrantClient({
   url: process.env.QDRANT_URL
@@ -31,7 +32,7 @@ async function main() {
   });
 
   const [clauses] = await db.execute(
-    'SELECT clause_id, clause_text FROM clauses'
+    'SELECT clause_id, contract_id, clause_text, vector_id FROM clauses'
   );
 
   for (const clause of clauses) {
@@ -44,24 +45,26 @@ async function main() {
     );
 
     const vector = Array.from(output.data);
+    // Collision-free point id (see clausePointId); recorded in MySQL before the upsert.
+    const pointId = clausePointId(clause);
+    await db.execute(
+      'UPDATE clauses SET vector_id = ? WHERE clause_id = ?',
+      [String(pointId), clause.clause_id]
+    );
 
     await qdrant.upsert(COLLECTION, {
       points: [
         {
-          id: clause.clause_id,
+          id: pointId,
           vector: vector,
           payload: {
             mysql_id: clause.clause_id,
+            contract_id: clause.contract_id,
             type: 'clause'
           }
         }
       ]
     });
-
-    await db.execute(
-      'UPDATE clauses SET vector_id = ? WHERE clause_id = ?',
-      [String(clause.clause_id), clause.clause_id]
-    );
 
     console.log(`Embedded clause ${clause.clause_id}`);
   }

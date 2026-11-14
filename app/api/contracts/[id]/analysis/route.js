@@ -26,9 +26,9 @@ export async function POST(request, { params }) {
 
     console.log(`Starting analysis for contract ${contractId}...`);
 
-    const db = getDb();
+    const db = getDb(user);
     const patternsEmbedded = await embedRiskPatterns(db);
-    const result = await runAnalysis(contractId);
+    const result = await runAnalysis(contractId, db);
 
     await db.execute(
       `UPDATE contracts

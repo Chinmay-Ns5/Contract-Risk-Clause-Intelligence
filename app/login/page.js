@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +24,7 @@ export default function LoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          username,
           password,
         }),
       });
@@ -69,16 +68,17 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="mt-6 space-y-5">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
-              Email
+              MySQL username
             </label>
 
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-slate-900 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
-              placeholder="Enter your email"
+              placeholder="e.g. cri_admin"
             />
           </div>
 
@@ -89,6 +89,7 @@ export default function LoginPage() {
 
             <input
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -107,7 +108,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-sm text-gray-600">
-          New to the platform? <Link href="/signup" className="font-medium text-blue-600 hover:underline">Create a Viewer account</Link>
+          Sign in with your MySQL database account. Accounts are created by the database administrator; self-registration is disabled.
         </p>
       </div>
     </main>

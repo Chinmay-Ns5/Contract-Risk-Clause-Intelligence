@@ -37,7 +37,7 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ success: false, error: 'Invalid risk flag ID.' }, { status: 400 });
     }
 
-    const db = getDb();
+    const db = getDb(user);
     const [[existingFlag]] = await db.execute(
       'SELECT flag_id FROM risk_flags WHERE flag_id = ?',
       [flagId]

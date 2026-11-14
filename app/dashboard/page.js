@@ -34,7 +34,7 @@ export default function Dashboard() {
         <header className="flex flex-col gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            {user && <p className="mt-2 text-gray-600">Welcome, {user.name} · {user.role_name}</p>}
+            {user && <p className="mt-2 text-gray-600">Welcome, {user.name} · {user.role_name}{user.mysql_user && ` · MySQL account: ${user.mysql_user}`}</p>}
           </div>
           <button onClick={signOut} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
             Sign out

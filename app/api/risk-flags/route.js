@@ -3,12 +3,13 @@ import { getDb } from '@/app/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function GET(request) {
-  if (!await getSessionUser(request)) {
+  const user = await getSessionUser(request);
+  if (!user) {
     return NextResponse.json({ success: false, error: 'Authentication required.' }, { status: 401 });
   }
 
   try {
-    const db = getDb();
+    const db = getDb(user);
     const { searchParams } = new URL(request.url);
 
     const category = searchParams.get('category');

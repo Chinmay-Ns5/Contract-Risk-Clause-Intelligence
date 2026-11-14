@@ -112,7 +112,7 @@ Everything here is based on the actual code in this repository. File references 
 - **MySQL is the source of truth.** It stores all the real records: users, contracts, clause text, flags, obligations.
 - **Qdrant is a search index.** It stores only vectors plus a small payload (`mysql_id`, `type`). Each Qdrant point points back to a MySQL row.
 - They are linked by IDs:
-  - Clause vectors use **point id = `clause_id`**, and `clauses.vector_id` stores that id.
+  - Clause vectors use a **random UUID point id**, stored in `clauses.vector_id` (clauses embedded before this change keep their legacy id = `clause_id`). UUIDs avoid overwriting stale vectors when MySQL reuses an auto-increment `clause_id`.
   - Pattern vectors use **point id = `10000 + pattern_id`**, and `risk_patterns.vector_id` stores that id.
   - The payload `{ mysql_id, type: 'clause' | 'pattern' }` tells us which MySQL table a point belongs to.
 
@@ -299,7 +299,7 @@ A **point** in Qdrant = `{ id, vector, payload }`:
 
 | Kind | id | payload |
 |---|---|---|
-| Clause | `clause_id` (e.g. 15) | `{ mysql_id: 15, type: 'clause' }` |
+| Clause | UUID stored in `clauses.vector_id` | `{ mysql_id: 15, contract_id: 4, type: 'clause' }` |
 | Risk pattern | `10000 + pattern_id` (e.g. 10003) | `{ mysql_id: 3, type: 'pattern' }` |
 
 The +10000 offset keeps pattern ids from colliding with clause ids inside the same collection.
@@ -351,7 +351,7 @@ Admin selects PDF ─► POST /api/contracts (multipart/form-data)
  │          INSERT INTO contracts (...) status='pending'
  │          INSERT INTO clauses (...) for every clause
  │        COMMIT      (ROLLBACK if anything fails → no half-saved contract)
- ├─ 7. EMBED CLAUSES  : each clause_text → 384-d vector → Qdrant upsert (id = clause_id)
+ ├─ 7. EMBED CLAUSES  : each clause_text → 384-d vector → Qdrant upsert (id = UUID in clauses.vector_id)
  │                      UPDATE clauses SET vector_id = ...
  ├─ 8. EMBED PATTERNS : every risk_pattern → vector → Qdrant upsert (id = 10000 + pattern_id)
  ├─ 9. ANALYZE (runAnalysis):

@@ -25,16 +25,18 @@ async function createDbConnection() {
  * Analyze clauses for one specific contract.
  *
  * @param {number} contractId
+ * @param {object} [existingDb] Connection/pool of the logged-in MySQL account.
+ *   When omitted (standalone CLI use) a connection is created from MYSQL_* env vars.
  * @returns {Promise<object>} Analysis summary
  */
-export async function runAnalysis(contractId) {
+export async function runAnalysis(contractId, existingDb = null) {
   if (!Number.isInteger(contractId) || contractId <= 0) {
     throw new Error(
       `Invalid contractId: ${contractId}. contractId must be a positive integer.`
     );
   }
 
-  const db = await createDbConnection();
+  const db = existingDb || await createDbConnection();
 
   console.log(`\nStarting risk analysis for contract ${contractId}...`);
 
@@ -227,7 +229,7 @@ export async function runAnalysis(contractId) {
 
     return summary;
   } finally {
-    await db.end();
+    if (!existingDb) await db.end();
   }
 }
 
